@@ -6,29 +6,26 @@ using System.Runtime.Serialization;
 
 namespace DotEnv
 {
-	public class EnvFileLoadSettings
+	[Flags]
+	public enum EnvFileLoadSettings
 	{
-		public bool ShouldFailOnMissingConfigFile;
-		public bool ShouldFailOnInvalidConfigFile;
+		None,
+		ThrowOnMissingFile = 1,
+		ThrowOnInvalidFile = 2
 	}
 
 	public static class DotEnvConfig
 	{
 		// ReSharper disable InconsistentNaming
-		private static readonly EnvFileLoadSettings _loadSettings = new EnvFileLoadSettings();
 		private static EnvironmentImpl _environmentImpl;
 		// ReSharper restore InconsistentNaming
 
-		public static EnvFileLoadSettings LoadSettings
-		{
-			get { return _loadSettings; }
-		}
-
-		public static void Install()
+		
+		public static void Install(EnvFileLoadSettings loadSettings = EnvFileLoadSettings.None)
 		{
 			if (_environmentImpl == null)
 			{
-				_environmentImpl = new EnvironmentImpl(new JsonSettingsProvider(null, LoadSettings));
+				_environmentImpl = new EnvironmentImpl(new JsonSettingsProvider(null, loadSettings));
 			}
 			_environmentImpl.Load();
 		}
@@ -115,7 +112,7 @@ namespace DotEnv
 		{
 		}
 
-		internal JsonSettingsProvider(IFileSystem fileSystem):this(fileSystem, null)
+		internal JsonSettingsProvider(IFileSystem fileSystem):this(fileSystem, EnvFileLoadSettings.None)
 		{
 			
 		}
@@ -123,7 +120,7 @@ namespace DotEnv
 		internal JsonSettingsProvider(IFileSystem fileSystem, EnvFileLoadSettings loadSettings)
 		{
 			_fileSystem = fileSystem ?? new FileSystem();
-			_loadSettings = loadSettings ?? new EnvFileLoadSettings();
+			_loadSettings = loadSettings;
 		}
 
 		public IEnumerable<Setting> Get()
@@ -135,7 +132,7 @@ namespace DotEnv
 		{
 			if (!_fileSystem.File.Exists(".env"))
 			{
-				if (_loadSettings.ShouldFailOnMissingConfigFile)
+				if (_loadSettings.HasFlag(EnvFileLoadSettings.ThrowOnMissingFile))
 				{
 					throw new DotEnvConfigFileException(DotEnvConfigFileException.FileMissingMessage);
 				}
@@ -149,7 +146,7 @@ namespace DotEnv
 			}
 			catch (SerializationException ex)
 			{
-				if (_loadSettings.ShouldFailOnInvalidConfigFile)
+				if (_loadSettings.HasFlag(EnvFileLoadSettings.ThrowOnInvalidFile))
 				{
 					throw new DotEnvConfigFileException(DotEnvConfigFileException.FileInvalidMessage, ex);	
 				}

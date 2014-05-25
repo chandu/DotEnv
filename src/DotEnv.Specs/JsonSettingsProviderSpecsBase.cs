@@ -29,10 +29,7 @@ namespace DotEnv.Specs
 		public class and_load_settings_are_set_to_fail_on_missing_file : When_env_file_is_not_present
 		{
 			private Establish context = () =>
-				_provider = new JsonSettingsProvider(_fileSystem, new EnvFileLoadSettings
-				{
-					ShouldFailOnMissingConfigFile = true
-				});
+				_provider = new JsonSettingsProvider(_fileSystem, EnvFileLoadSettings.ThrowOnMissingFile);
 
 			private It should_throw_invalid_EnvConfigFile_exception = () =>
 			{
@@ -44,10 +41,7 @@ namespace DotEnv.Specs
 		public class and_load_settings_are_set_not_to_fail_on_missing_file : When_env_file_is_not_present
 		{
 			private Establish context = () =>
-				_provider = new JsonSettingsProvider(_fileSystem, new EnvFileLoadSettings
-				{
-					ShouldFailOnMissingConfigFile = false
-				});
+				_provider = new JsonSettingsProvider(_fileSystem, EnvFileLoadSettings.ThrowOnMissingFile);
 		}
 
 		public class When_valid_env_file_is_present
@@ -94,10 +88,7 @@ namespace DotEnv.Specs
 		public class and_load_settings_are_set_to_ignore_on_invalid_file : When_env_file_is_in_invalid_format
 		{
 			private Establish context = () =>
-				_provider = new JsonSettingsProvider(_fileSystem, new EnvFileLoadSettings
-				{
-					ShouldFailOnInvalidConfigFile = false
-				});
+				_provider = new JsonSettingsProvider(_fileSystem, EnvFileLoadSettings.None);
 
 			private It should_not_throw_invalid_EnvConfigFile_exception = () =>
 				_dotEnvFileException.ShouldBeNull();
@@ -106,10 +97,7 @@ namespace DotEnv.Specs
 		public class and_load_settings_are_set_to_fail_on_invalid_file : When_env_file_is_in_invalid_format
 		{
 			private Establish context = () =>
-				_provider = new JsonSettingsProvider(_fileSystem, new EnvFileLoadSettings
-				{
-					ShouldFailOnInvalidConfigFile = true
-				});
+				_provider = new JsonSettingsProvider(_fileSystem, EnvFileLoadSettings.ThrowOnInvalidFile);
 
 			private It should_throw_invalid_EnvConfigFile_exception = () =>
 			{
